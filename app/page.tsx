@@ -316,27 +316,73 @@ const uploadAudio = async (
           : meeting
       )
     );
-const response = await fetch(
-  "/api/transcribe",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type":
-        "application/json",
-    },
-    body: JSON.stringify({
-      audioUrl: publicUrl,
-    }),
-  }
+
+    const transcribeResponse =
+      await fetch("/api/transcribe", {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify({
+          audioUrl: publicUrl,
+        }),
+      });
+
+    const transcribeData =
+      await transcribeResponse.json();
+
+    const transcript =
+      transcribeData.transcript ?? "";
+
+    await supabase
+      .from("meetings")
+      .update({
+        transcript,
+      })
+      .eq("id", selectedMeeting.id);
+
+    const summaryResponse =
+      await fetch("/api/summary", {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify({
+          transcript,
+        }),
+      });
+
+const summaryData =
+  await summaryResponse.json();
+
+console.log("SUMMARY DATA");
+console.log(summaryData);
+
+console.log("SUMMARY VALUE");
+console.log(summaryData.summary);
+
+alert(
+  "SUMMARY: " +
+    summaryData.summary
 );
 
-const result =
-  await response.json();
 
-console.log(result);
+    await supabase
+      .from("meetings")
+      .update({
+        transcript,
+        summary:
+          summaryData.summary ?? "",
+      })
+      .eq("id", selectedMeeting.id);
 
-alert(result.transcript);
-    alert("음성 업로드 완료");
+    await loadUserAndMeetings();
+
+    alert(
+      "회의록 + 요약 생성 완료"
+    );
   } catch (error) {
     alert(
       "업로드 실패: " +
