@@ -1,6 +1,5 @@
 import { Meeting } from "@/types/meeting";
-import Recorder from "./Recorder";
-import SpeechRecorder from "./SpeechRecorder";
+import MeetingRecorder from "./MeetingRecorder";
 
 interface MeetingEditorProps {
   selectedMeeting: Meeting | null;
@@ -86,12 +85,9 @@ export default function MeetingEditor({
           />
         </label>
 
-        <Recorder
-          onRecorded={onRecorded}
-        />
-
-        <SpeechRecorder
+        <MeetingRecorder
           onTranscript={onSpeechTranscript}
+          onRecorded={onRecorded}
         />
       </div>
 

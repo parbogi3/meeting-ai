@@ -17,6 +17,9 @@ export default function SpeechRecorder({
   const recognitionRef =
     useRef<any>(null);
 
+  const transcriptRef =
+    useRef("");
+
   const startRecognition = () => {
     const SpeechRecognition =
       (window as any)
@@ -31,6 +34,8 @@ export default function SpeechRecorder({
       return;
     }
 
+    transcriptRef.current = "";
+
     const recognition =
       new SpeechRecognition();
 
@@ -38,26 +43,28 @@ export default function SpeechRecorder({
 
     recognition.continuous = true;
 
-    recognition.interimResults = true;
+    recognition.interimResults = false;
 
     recognition.onresult = (
       event: any
     ) => {
-      let transcript = "";
+      const latestText =
+        event.results[
+          event.results.length - 1
+        ][0].transcript;
 
-      for (
-        let i = 0;
-        i < event.results.length;
-        i++
-      ) {
-        transcript +=
-          event.results[i][0].transcript +
-          " ";
-      }
+      transcriptRef.current +=
+        latestText + "\n";
 
       onTranscript(
-        transcript.trim()
+        transcriptRef.current
       );
+    };
+
+    recognition.onerror = (
+      error: any
+    ) => {
+      console.error(error);
     };
 
     recognition.start();
@@ -93,4 +100,4 @@ export default function SpeechRecorder({
       )}
     </>
   );
-}
+} 

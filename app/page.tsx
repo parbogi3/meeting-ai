@@ -519,14 +519,20 @@ const handleRecordedAudio = async (
   setSelectedMeeting={setSelectedMeeting}
 />
 
-     <MeetingEditor
+<MeetingEditor
   selectedMeeting={selectedMeeting}
   renameMeeting={renameMeeting}
   deleteMeeting={deleteMeeting}
   generateSummary={generateSummary}
   uploadAudio={uploadAudio}
   updateTranscript={updateTranscript}
-  onRecorded={handleRecordedAudio}
+  onRecorded={async (file) => {
+    await handleRecordedAudio(file);
+
+    setTimeout(() => {
+      generateSummary();
+    }, 2000);
+  }}
   onSpeechTranscript={(text) => {
     updateTranscript(text);
   }}
