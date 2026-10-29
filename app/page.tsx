@@ -519,7 +519,7 @@ const handleRecordedAudio = async (
   setSelectedMeeting={setSelectedMeeting}
 />
 
-      <MeetingEditor
+     <MeetingEditor
   selectedMeeting={selectedMeeting}
   renameMeeting={renameMeeting}
   deleteMeeting={deleteMeeting}
@@ -527,6 +527,9 @@ const handleRecordedAudio = async (
   uploadAudio={uploadAudio}
   updateTranscript={updateTranscript}
   onRecorded={handleRecordedAudio}
+  onSpeechTranscript={(text) => {
+    updateTranscript(text);
+  }}
 />
     </div>
   );

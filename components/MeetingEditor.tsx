@@ -1,5 +1,6 @@
 import { Meeting } from "@/types/meeting";
 import Recorder from "./Recorder";
+import SpeechRecorder from "./SpeechRecorder";
 
 interface MeetingEditorProps {
   selectedMeeting: Meeting | null;
@@ -20,6 +21,10 @@ interface MeetingEditorProps {
   onRecorded: (
     file: File
   ) => Promise<void>;
+
+  onSpeechTranscript: (
+    text: string
+  ) => void;
 }
 
 export default function MeetingEditor({
@@ -30,6 +35,7 @@ export default function MeetingEditor({
   uploadAudio,
   updateTranscript,
   onRecorded,
+  onSpeechTranscript,
 }: MeetingEditorProps) {
   if (!selectedMeeting) {
     return (
@@ -82,6 +88,10 @@ export default function MeetingEditor({
 
         <Recorder
           onRecorded={onRecorded}
+        />
+
+        <SpeechRecorder
+          onTranscript={onSpeechTranscript}
         />
       </div>
 
