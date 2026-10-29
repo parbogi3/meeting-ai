@@ -88,10 +88,17 @@ export default function MeetingEditor({
           />
         </label>
 
-        <MeetingRecorder
-          onTranscript={onSpeechTranscript}
-          onRecorded={onRecorded}
-        />
+<MeetingRecorder
+  onTranscript={onSpeechTranscript}
+  onRecorded={onRecorded}
+  onMeetingStarted={() => {}}
+  onMeetingEnded={(duration) => {
+    console.log(
+      "회의 길이:",
+      duration
+    );
+  }}
+/>
       </div>
 
       <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3 text-blue-700">

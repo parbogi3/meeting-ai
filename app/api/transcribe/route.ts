@@ -4,13 +4,13 @@ export async function POST(
   request: Request
 ) {
   try {
-    const body = await request.json();
-
-    const { audioUrl } = body;
+    const { audioUrl } =
+      await request.json();
 
     if (!audioUrl) {
       return NextResponse.json(
         {
+          success: false,
           error: "audioUrl is required",
         },
         {
@@ -19,17 +19,42 @@ export async function POST(
       );
     }
 
+    const response =
+      await fetch(audioUrl);
+
+    if (!response.ok) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "오디오 파일 다운로드 실패",
+        },
+        {
+          status: 500,
+        }
+      );
+    }
+
+    const arrayBuffer =
+      await response.arrayBuffer();
+
+    const buffer =
+      Buffer.from(arrayBuffer);
+
     console.log(
-      "STT 요청:",
-      audioUrl
+      "AUDIO SIZE:",
+      buffer.length
     );
 
     return NextResponse.json({
       success: true,
       transcript:
-        "테스트 회의록입니다.",
+        "파일 다운로드 성공",
+      fileSize: buffer.length,
     });
   } catch (error) {
+    console.error(error);
+
     return NextResponse.json(
       {
         success: false,
