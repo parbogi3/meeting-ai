@@ -22,7 +22,7 @@ export default function CalendarPanel({
   createMeeting,
 }: CalendarPanelProps) {
   return (
-    <aside className="w-72 bg-slate-900 text-white p-4">
+    <aside className="w-72 bg-slate-900 text-white p-4 h-screen overflow-y-auto">
       <h1 className="text-2xl font-bold mb-4">
         Meeting AI
       </h1>

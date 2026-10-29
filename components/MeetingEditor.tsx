@@ -41,7 +41,7 @@ export default function MeetingEditor({
 }: MeetingEditorProps) {
   if (!selectedMeeting) {
     return (
-      <main className="flex-1 bg-slate-100 p-8">
+      <main className="flex-1 bg-slate-100 p-8 overflow-y-auto h-screen">
         <div className="text-black">
           회의를 선택하세요.
         </div>
@@ -50,7 +50,7 @@ export default function MeetingEditor({
   }
 
   return (
-    <main className="flex-1 bg-slate-100 p-8">
+  <main className="flex-1 bg-slate-100 p-8 h-screen overflow-y-auto">
       <h1 className="text-3xl font-bold text-black mb-4">
         {selectedMeeting.title}
       </h1>

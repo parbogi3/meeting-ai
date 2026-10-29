@@ -519,7 +519,7 @@ const currentMonth =
   ];
 
   return (
-    <div className="flex h-screen">
+  <div className="flex h-screen overflow-hidden">
    <CalendarPanel
   currentYear={currentYear}
   currentMonth={currentMonth}

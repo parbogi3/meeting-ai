@@ -22,7 +22,8 @@ export default function MeetingList({
   );
 
   return (
-    <aside className="w-80 bg-slate-800 text-white p-4 overflow-y-auto">
+  <aside className="w-80 bg-slate-800 text-white p-4 overflow-y-auto h-screen">
+
       <h2 className="font-bold text-lg mb-4">
         선택 날짜 회의
       </h2>
