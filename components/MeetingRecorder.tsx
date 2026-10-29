@@ -10,11 +10,19 @@ interface MeetingRecorderProps {
   onRecorded: (
     file: File
   ) => Promise<void>;
+
+  onMeetingStarted: () => void;
+
+  onMeetingEnded: (
+    duration: string
+  ) => void;
 }
 
 export default function MeetingRecorder({
   onTranscript,
   onRecorded,
+  onMeetingStarted,
+  onMeetingEnded,
 }: MeetingRecorderProps) {
   const [recording, setRecording] =
     useState(false);
@@ -30,6 +38,9 @@ export default function MeetingRecorder({
   const transcriptRef =
     useRef("");
 
+  const meetingStartRef =
+    useRef<number | null>(null);
+
   const startMeeting = async () => {
     try {
       const SpeechRecognition =
@@ -44,6 +55,11 @@ export default function MeetingRecorder({
         );
         return;
       }
+
+      meetingStartRef.current =
+        Date.now();
+
+      onMeetingStarted();
 
       transcriptRef.current = "";
 
@@ -123,6 +139,28 @@ export default function MeetingRecorder({
 
   const stopMeeting = () => {
     recognitionRef.current?.stop();
+
+    const meetingEnd =
+      Date.now();
+
+    const durationSeconds =
+      Math.floor(
+        (meetingEnd -
+          (meetingStartRef.current ??
+            meetingEnd)) /
+          1000
+      );
+
+    const minutes =
+      Math.floor(durationSeconds / 60);
+
+    const seconds =
+      durationSeconds % 60;
+
+    const duration =
+      `${minutes}분 ${seconds}초`;
+
+    onMeetingEnded(duration);
 
     const recorder =
       mediaRecorderRef.current;
