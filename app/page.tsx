@@ -7,7 +7,7 @@ export default function Home() {
 
         <div className="text-center">
           <h1 className="text-6xl font-bold mb-6">
-            🎤 Meeting AI
+             부산정보산업진흥원 AI·AX산업팀
           </h1>
 
           <p className="text-xl text-slate-300 mb-10">

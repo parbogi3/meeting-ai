@@ -17,27 +17,31 @@ export default function LoginPage() {
     useState(false);
 
   const login = async () => {
-    try {
-      setLoading(true);
+  try {
+    alert("로그인 버튼 클릭");
 
-      const { error } =
-        await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+    setLoading(true);
 
-      if (error) {
-        alert(error.message);
-        return;
-      }
+    const { error } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      router.push("/");
-    } catch (error) {
-      alert(String(error));
-    } finally {
-      setLoading(false);
+    if (error) {
+      alert("에러: " + error.message);
+      return;
     }
-  };
+
+    alert("로그인 성공");
+
+    router.push("/dashboard");
+  } catch (error) {
+    alert("예외 발생: " + String(error));
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
