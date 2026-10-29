@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import CalendarPanel from "@/components/CalendarPanel";
 import MeetingList from "@/components/MeetingList";
 import MeetingEditor from "@/components/MeetingEditor";
-
+import DashboardHeader from "@/components/DashboardHeader";
 
 type Meeting = {
   id: string;
@@ -519,6 +519,9 @@ const currentMonth =
   ];
 
   return (
+      <div className="h-screen flex flex-col">
+
+    <DashboardHeader />
   <div className="flex h-screen overflow-hidden">
    <CalendarPanel
   currentYear={currentYear}
@@ -558,5 +561,7 @@ const currentMonth =
 />
 
     </div>
-  );
+
+  </div>
+);
 }
