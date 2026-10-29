@@ -13,6 +13,10 @@ type Meeting = {
   transcript: string;
   summary?: string | null;
   audio_url?: string | null;
+
+  meeting_started_at?: string | null;
+  meeting_ended_at?: string | null;
+
   created_at: string;
 };
 
@@ -23,6 +27,10 @@ export default function Home() {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [selectedMeeting, setSelectedMeeting] =
     useState<Meeting | null>(null);
+    const [meetingDuration, setMeetingDuration] =
+  useState("");
+    const [meetingStatus, setMeetingStatus] =
+  useState("대기중");
 
   const [currentDate, setCurrentDate] =
     useState(new Date());
@@ -171,92 +179,106 @@ export default function Home() {
     }
   };
 
-  const generateSummary = async () => {
-    if (!selectedMeeting) {
-      alert("회의를 선택하세요.");
+const generateSummary = async () => {
+  if (!selectedMeeting) {
+    alert("회의를 선택하세요.");
+    return;
+  }
+
+  try {
+    const { data: latestMeeting, error: loadError } =
+      await supabase
+        .from("meetings")
+        .select("*")
+        .eq("id", selectedMeeting.id)
+        .single();
+
+    if (loadError) {
+      alert(loadError.message);
       return;
     }
 
-    if (!selectedMeeting.transcript?.trim()) {
+    if (
+      !latestMeeting?.transcript?.trim()
+    ) {
       alert("회의 원문이 없습니다.");
       return;
     }
 
-    try {
-      const response = await fetch(
-        "/api/summary",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            transcript:
-              selectedMeeting.transcript,
-          }),
-        }
-      );
-
-      const data =
-        await response.json();
-
-      console.log(data);
-
-      if (!data.summary) {
-        alert(
-          JSON.stringify(
-            data,
-            null,
-            2
-          )
-        );
-        return;
+    const response = await fetch(
+      "/api/summary",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify({
+          transcript:
+            latestMeeting.transcript,
+        }),
       }
+    );
 
-      const { error } = await supabase
-        .from("meetings")
-        .update({
-          summary: data.summary,
-        })
-        .eq(
-          "id",
-          selectedMeeting.id
-        );
+    const data =
+      await response.json();
 
-      if (error) {
-        alert(error.message);
-        return;
-      }
+    console.log(data);
 
-      const updatedMeeting = {
-        ...selectedMeeting,
-        summary: data.summary,
-      };
-
-      setSelectedMeeting(
-        updatedMeeting
-      );
-
-      setMeetings((prev) =>
-        prev.map((meeting) =>
-          meeting.id ===
-          selectedMeeting.id
-            ? updatedMeeting
-            : meeting
+    if (!data.summary) {
+      alert(
+        JSON.stringify(
+          data,
+          null,
+          2
         )
       );
-
-      alert("AI 요약 완료");
-    } catch (error) {
-      console.error(error);
-
-      alert(
-        "요약 실패: " +
-          String(error)
-      );
+      return;
     }
-  };
+
+    const { error } = await supabase
+      .from("meetings")
+      .update({
+        summary: data.summary,
+      })
+      .eq(
+        "id",
+        selectedMeeting.id
+      );
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    const updatedMeeting = {
+      ...latestMeeting,
+      summary: data.summary,
+    };
+
+    setSelectedMeeting(
+      updatedMeeting
+    );
+
+    setMeetings((prev) =>
+      prev.map((meeting) =>
+        meeting.id ===
+        selectedMeeting.id
+          ? updatedMeeting
+          : meeting
+      )
+    );
+
+    alert("AI 요약 완료");
+  } catch (error) {
+    console.error(error);
+
+    alert(
+      "요약 실패: " +
+        String(error)
+    );
+  }
+};
 const uploadAudio = async (
   e: React.ChangeEvent<HTMLInputElement>
 ) => {
@@ -393,6 +415,7 @@ alert(
 const handleRecordedAudio = async (
   file: File
 ) => {
+  setMeetingStatus("오디오 저장중...");
   if (!selectedMeeting) {
     alert("회의를 선택하세요.");
     return;
@@ -430,10 +453,12 @@ const handleRecordedAudio = async (
       alert(updateError.message);
       return;
     }
-
+setMeetingStatus("회의 데이터 저장중...");
     await loadUserAndMeetings();
 
-    alert("녹음 업로드 완료");
+    setMeetingStatus("완료");
+
+alert("녹음 업로드 완료");
   } catch (error) {
     alert(
       "업로드 실패: " +
@@ -529,14 +554,14 @@ const handleRecordedAudio = async (
   onRecorded={async (file) => {
     await handleRecordedAudio(file);
 
-    setTimeout(() => {
-      generateSummary();
-    }, 2000);
+    await generateSummary();
   }}
   onSpeechTranscript={(text) => {
     updateTranscript(text);
   }}
+  meetingStatus={meetingStatus}
 />
+
     </div>
   );
 }

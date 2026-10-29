@@ -24,6 +24,8 @@ interface MeetingEditorProps {
   onSpeechTranscript: (
     text: string
   ) => void;
+
+  meetingStatus: string;
 }
 
 export default function MeetingEditor({
@@ -35,6 +37,7 @@ export default function MeetingEditor({
   updateTranscript,
   onRecorded,
   onSpeechTranscript,
+  meetingStatus,
 }: MeetingEditorProps) {
   if (!selectedMeeting) {
     return (
@@ -91,12 +94,14 @@ export default function MeetingEditor({
         />
       </div>
 
+      <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3 text-blue-700">
+        현재 상태: {meetingStatus}
+      </div>
+
       <textarea
         value={selectedMeeting.transcript}
         onChange={(e) =>
-          updateTranscript(
-            e.target.value
-          )
+          updateTranscript(e.target.value)
         }
         className="w-full min-h-[350px] border rounded p-4 text-black bg-white"
       />
