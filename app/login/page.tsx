@@ -16,28 +16,27 @@ export default function LoginPage() {
   const [loading, setLoading] =
     useState(false);
 
-  const login = async () => {
+const login = async () => {
   try {
-    alert("로그인 버튼 클릭");
-
     setLoading(true);
 
-    const { error } =
+    const { data, error } =
       await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
     if (error) {
-      alert("에러: " + error.message);
+      alert(error.message);
       return;
     }
 
-    alert("로그인 성공");
+    console.log("LOGIN USER", data.user);
 
-    router.push("/dashboard");
+    window.location.href =
+      "/dashboard";
   } catch (error) {
-    alert("예외 발생: " + String(error));
+    alert(String(error));
   } finally {
     setLoading(false);
   }
