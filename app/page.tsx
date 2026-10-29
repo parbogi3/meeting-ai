@@ -7,6 +7,7 @@ import CalendarPanel from "@/components/CalendarPanel";
 import MeetingList from "@/components/MeetingList";
 import MeetingEditor from "@/components/MeetingEditor";
 
+
 type Meeting = {
   id: string;
   title: string;
@@ -27,29 +28,31 @@ export default function Home() {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [selectedMeeting, setSelectedMeeting] =
     useState<Meeting | null>(null);
-    const [meetingDuration, setMeetingDuration] =
-  useState("");
+
     const [meetingStatus, setMeetingStatus] =
   useState("대기중");
 
-  const [currentDate, setCurrentDate] =
-    useState(new Date());
+const [currentDate, setCurrentDate] =
+  useState<Date | null>(null);
+
+const [selectedDate, setSelectedDate] =
+  useState("");
+
+useEffect(() => {
+  loadUserAndMeetings();
 
   const today = new Date();
 
-  const [selectedDate, setSelectedDate] =
-    useState(
-      `${today.getFullYear()}-${String(
-        today.getMonth() + 1
-      ).padStart(2, "0")}-${String(
-        today.getDate()
-      ).padStart(2, "0")}`
-    );
+  setCurrentDate(today);
 
-  useEffect(() => {
-    loadUserAndMeetings();
-  }, []);
-
+  setSelectedDate(
+    `${today.getFullYear()}-${String(
+      today.getMonth() + 1
+    ).padStart(2, "0")}-${String(
+      today.getDate()
+    ).padStart(2, "0")}`
+  );
+}, []);
   const loadUserAndMeetings = async () => {
     const {
       data: { user },
@@ -466,11 +469,14 @@ alert("녹음 업로드 완료");
     );
   }
 };
-  const currentYear =
-    currentDate.getFullYear();
+if (!currentDate) {
+  return <div>로딩중...</div>;
+}
+const currentYear =
+  currentDate.getFullYear();
 
-  const currentMonth =
-    currentDate.getMonth();
+const currentMonth =
+  currentDate.getMonth();
 
   const prevMonth = () => {
     setCurrentDate(
@@ -511,17 +517,6 @@ alert("녹음 업로드 완료");
       (_, i) => i + 1
     ),
   ];
-
-  const meetingsByDate = useMemo(() => {
-    return meetings.filter((meeting) => {
-      const date =
-        meeting.created_at.split(
-          "T"
-        )[0];
-
-      return date === selectedDate;
-    });
-  }, [meetings, selectedDate]);
 
   return (
     <div className="flex h-screen">
