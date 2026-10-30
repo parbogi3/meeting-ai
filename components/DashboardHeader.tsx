@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 
@@ -9,32 +11,39 @@ export default function DashboardHeader() {
   };
 
   return (
-    <header className="h-16 bg-white border-b flex items-center justify-between px-6">
-      <div className="flex items-center gap-4">
-        <Image
-          src="/logo.png"
-          alt="BIPA"
-          width={42}
-          height={42}
-        />
+    <header className="bg-white border-b shadow-sm">
+      <div className="px-8 py-4 flex items-center justify-between">
 
-        <div>
-          <h1 className="font-bold text-slate-900">
-            Meeting AI
-          </h1>
+        <div className="flex items-center gap-5">
 
-          <p className="text-xs text-slate-500">
-            (재)부산정보산업진흥원 
-          </p>
+          <Image
+            src="/logo.png"
+            alt="BIPA"
+            width={220}
+            height={110}
+            priority
+          />
+
+          <div>
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+              BIPA AI NOTE
+            </h1>
+
+            <p className="text-sm text-slate-500 mt-1">
+              부산정보산업진흥원 AI·AX산업팀
+            </p>
+          </div>
+
         </div>
-      </div>
 
-      <button
-        onClick={logout}
-        className="bg-slate-900 text-white px-4 py-2 rounded-lg"
-      >
-        로그아웃
-      </button>
+        <button
+          onClick={logout}
+          className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg transition"
+        >
+          로그아웃
+        </button>
+
+      </div>
     </header>
   );
 }

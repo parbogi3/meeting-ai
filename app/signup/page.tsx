@@ -49,13 +49,11 @@ export default function SignupPage() {
 
         <div className="mb-10 text-center">
           <h1 className="text-5xl font-bold text-white mb-4">
-            🎤 Meeting AI
+             BIPA AI NOTE
           </h1>
 
-          <p className="text-slate-400">
-            무료로 시작하고
-            AI 회의 비서를 경험해보세요.
-          </p>
+
+        
         </div>
 
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">

@@ -26,7 +26,7 @@ export default function Home() {
       <section className="max-w-6xl mx-auto px-6 py-24 text-center">
 
         <div className="inline-flex items-center rounded-full bg-blue-100 text-blue-700 px-5 py-2 mb-8">
-          부산정보산업진흥원 AI·AX산업팀 개발
+          부산정보산업진흥원 AI·AX산업팀
         </div>
 
         <h2 className="text-6xl font-bold text-slate-900 leading-tight">

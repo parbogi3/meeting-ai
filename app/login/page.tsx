@@ -48,11 +48,11 @@ const login = async () => {
 
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-white">
-            🎤 Meeting AI
+              BIPA AI NOTE
           </h1>
 
           <p className="text-slate-400 mt-3">
-            실시간 AI 회의록 작성기
+            실시간 AI 회의록 작성 
           </p>
         </div>
 

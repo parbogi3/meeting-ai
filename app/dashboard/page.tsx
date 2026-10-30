@@ -9,16 +9,22 @@ import MeetingEditor from "@/components/MeetingEditor";
 import DashboardHeader from "@/components/DashboardHeader";
 
 type Meeting = {
-  id: string;
-  title: string;
-  transcript: string;
-  summary?: string | null;
-  audio_url?: string | null;
+meeting_date?: string | null;
+meeting_time?: string | null;
 
-  meeting_started_at?: string | null;
-  meeting_ended_at?: string | null;
+meeting_location?: string | null;
 
-  created_at: string;
+participants?: string | null;
+
+writer?: string | null;
+
+meeting_subject?: string | null;
+
+discussion_points?: string | null;
+
+decisions?: string | null;
+
+action_items?: string | null;
 };
 
 export default function Home() {
@@ -37,6 +43,28 @@ const [currentDate, setCurrentDate] =
 
 const [selectedDate, setSelectedDate] =
   useState("");
+
+    const [showCreateModal, setShowCreateModal] =
+    useState(false);
+
+  const [newMeetingTitle, setNewMeetingTitle] =
+    useState("");
+
+  const [selectedCategories, setSelectedCategories] =
+    useState<string[]>([]);
+
+    const [createCategories, setCreateCategories] =
+  useState<string[]>([]);
+
+    const categoryOptions = [
+  "사업운영",
+  "신규기획",
+  "현장소통",
+  "예산",
+  "일정",
+  "기타회의",
+];
+
 
 useEffect(() => {
   loadUserAndMeetings();
@@ -79,38 +107,49 @@ useEffect(() => {
     setMeetings(data || []);
 
     if (data && data.length > 0) {
-      setSelectedMeeting(data[0]);
-    }
+  setSelectedMeeting(data[0]);
+
+  setSelectedCategories(
+    data[0].categories ?? []
+  );
+}
   };
 
-  const createMeeting = async () => {
-    const title = prompt("회의 제목 입력");
+const createMeeting = async () => {
+  if (!newMeetingTitle.trim()) {
+    alert("회의 제목을 입력하세요.");
+    return;
+  }
 
-    if (!title) return;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  if (!user) return;
 
-    if (!user) return;
+  const { error } = await supabase
+    .from("meetings")
+    .insert({
+      title: newMeetingTitle,
+      transcript: "",
+      summary: "",
+      user_id: user.id,
+      categories: createCategories,
+    });
 
-    const { error } = await supabase
-      .from("meetings")
-      .insert({
-        title,
-        transcript: "",
-        summary: "",
-        user_id: user.id,
-      });
+  if (error) {
+    alert(error.message);
+    return;
+  }
 
-    if (error) {
-      alert(error.message);
-      return;
-    }
+  setShowCreateModal(false);
 
-    await loadUserAndMeetings();
-  };
+  setNewMeetingTitle("");
 
+  setCreateCategories([]);
+
+  await loadUserAndMeetings();
+};
   const renameMeeting = async () => {
     if (!selectedMeeting) return;
 
@@ -159,6 +198,39 @@ useEffect(() => {
 
     await loadUserAndMeetings();
   };
+const updateCategories = async (
+  updatedCategories: string[]
+) => {
+  if (!selectedMeeting) return;
+
+  const { error } = await supabase
+    .from("meetings")
+    .update({
+      categories: updatedCategories,
+    })
+    .eq("id", selectedMeeting.id);
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  setMeetings((prev) =>
+    prev.map((meeting) =>
+      meeting.id === selectedMeeting.id
+        ? {
+            ...meeting,
+            categories: updatedCategories,
+          }
+        : meeting
+    )
+  );
+
+  setSelectedMeeting({
+    ...selectedMeeting,
+    categories: updatedCategories,
+  });
+};
 
   const updateTranscript = async (
     value: string
@@ -522,8 +594,105 @@ const currentMonth =
       <div className="h-screen flex flex-col">
 
     <DashboardHeader />
-  <div className="flex h-screen overflow-hidden">
-   <CalendarPanel
+    {showCreateModal && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+    <div className="bg-white rounded-2xl p-6 w-[500px] shadow-xl text-slate-900">
+
+      <h2 className="text-2xl font-bold mb-5 text-slate-900">
+        새 회의 생성
+      </h2>
+
+      <input
+  value={newMeetingTitle}
+  onChange={(e) =>
+    setNewMeetingTitle(e.target.value)
+  }
+  placeholder="회의 제목 입력"
+  className="w-full border rounded-xl p-3 mb-5 text-slate-900 placeholder:text-slate-400 bg-white"
+/>
+
+      <div className="mb-5">
+
+        <div className="font-medium mb-3 text-slate-900">
+  카테고리 선택
+</div>
+
+       <div className="flex flex-wrap gap-2 mb-4">
+
+  {categoryOptions.map((category) => (
+    <button
+      key={category}
+     onClick={async () => {
+  let updatedCategories;
+
+  if (
+    createCategories.includes(
+      category
+    )
+  ) {
+    updatedCategories =
+      createCategories.filter(
+        (c) => c !== category
+      );
+  } else {
+    updatedCategories = [
+      ...createCategories,
+      category,
+    ];
+  }
+
+setCreateCategories(
+  updatedCategories
+);
+
+}}
+      className={`px-3 py-1 rounded-full text-sm border transition ${
+        createCategories.includes(
+          category
+        )
+          ? "bg-indigo-600 text-white border-indigo-600"
+          : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
+      }`}
+    >
+      {category}
+    </button>
+  ))}
+
+</div>
+
+      </div>
+
+      <div className="flex justify-end gap-2">
+
+        <button
+          onClick={() => {
+  setShowCreateModal(false);
+
+  setNewMeetingTitle("");
+  setCreateCategories([]);
+}}
+          className="px-4 py-2 rounded-lg border"
+        >
+          취소
+        </button>
+       
+
+        <button
+          onClick={createMeeting}
+          className="px-4 py-2 rounded-lg bg-indigo-600 text-white"
+        >
+          생성
+        </button>
+        
+      </div>
+
+    </div>
+
+  </div>
+)}
+  <div className="flex flex-1 overflow-hidden">
+<CalendarPanel
   currentYear={currentYear}
   currentMonth={currentMonth}
   calendarDays={calendarDays}
@@ -532,14 +701,24 @@ const currentMonth =
   prevMonth={prevMonth}
   nextMonth={nextMonth}
   setSelectedDate={setSelectedDate}
-  createMeeting={createMeeting}
+createMeeting={() => {
+  setNewMeetingTitle("");
+  setCreateCategories([]);
+  setShowCreateModal(true);
+}}
 />
 
       <MeetingList
   meetings={meetings}
   selectedMeeting={selectedMeeting}
   selectedDate={selectedDate}
-  setSelectedMeeting={setSelectedMeeting}
+  setSelectedMeeting={(meeting) => {
+    setSelectedMeeting(meeting);
+
+    setSelectedCategories(
+      meeting.categories ?? []
+    );
+  }}
 />
 
 <MeetingEditor
@@ -551,13 +730,16 @@ const currentMonth =
   updateTranscript={updateTranscript}
   onRecorded={async (file) => {
     await handleRecordedAudio(file);
-
     await generateSummary();
   }}
   onSpeechTranscript={(text) => {
     updateTranscript(text);
   }}
   meetingStatus={meetingStatus}
+
+  selectedCategories={selectedCategories}
+  setSelectedCategories={setSelectedCategories}
+  updateCategories={updateCategories}
 />
 
     </div>
