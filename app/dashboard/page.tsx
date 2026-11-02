@@ -45,6 +45,10 @@ export default function Home() {
     const [meetingStatus, setMeetingStatus] =
   useState("대기중");
 
+  
+  const [isSummarizing, setIsSummarizing] =
+  useState(false);
+
 const [currentDate, setCurrentDate] =
   useState<Date | null>(null);
 
@@ -306,6 +310,7 @@ const generateSummary = async () => {
   }
 
   try {
+    setIsSummarizing(true);
     const { data: latestMeeting, error: loadError } =
       await supabase
         .from("meetings")
@@ -390,14 +395,16 @@ const generateSummary = async () => {
     );
 
     alert("AI 요약 완료");
-  } catch (error) {
-    console.error(error);
+ } catch (error) {
+  console.error(error);
 
-    alert(
-      "요약 실패: " +
-        String(error)
-    );
-  }
+  alert(
+    "요약 실패: " +
+      String(error)
+  );
+} finally {
+  setIsSummarizing(false);
+}
 };
 const uploadAudio = async (
   e: React.ChangeEvent<HTMLInputElement>
@@ -412,8 +419,13 @@ const uploadAudio = async (
   if (!file) return;
 
   try {
-    const fileName =
-      `${Date.now()}-${file.name}`;
+const extension =
+  file.name.split(".").pop();
+
+const fileName =
+  `${Date.now()}-${crypto.randomUUID()}.${extension}`;
+  console.log("파일명:", fileName);
+
 
     const { error } =
       await supabase.storage
@@ -459,23 +471,35 @@ const uploadAudio = async (
       )
     );
 
-    const transcribeResponse =
-      await fetch("/api/transcribe", {
-        method: "POST",
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
-        body: JSON.stringify({
-          audioUrl: publicUrl,
-        }),
-      });
+    const audioResponse =
+  await fetch(publicUrl);
 
-    const transcribeData =
-      await transcribeResponse.json();
+const audioBlob =
+  await audioResponse.blob();
 
-    const transcript =
-      transcribeData.transcript ?? "";
+  const formData = new FormData();
+
+formData.append(
+  "file",
+  audioBlob,
+  file.name
+);
+
+const transcribeResponse =
+  await fetch(
+    "http://218.39.228.166:9000/transcribe",
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  const transcribeData =
+  await transcribeResponse.json();
+
+const transcript =
+  transcribeData.text ?? "";
+
 
     await supabase
       .from("meetings")
@@ -542,9 +566,11 @@ const handleRecordedAudio = async (
   }
 
   try {
-    const fileName =
-      `${Date.now()}-${file.name}`;
+    const extension =
+  file.name.split(".").pop();
 
+const fileName =
+  `${Date.now()}-${crypto.randomUUID()}.${extension}`;
     const { error } =
       await supabase.storage
         .from("audio-files")
@@ -757,6 +783,7 @@ createMeeting={() => {
   meetings={meetings}
   selectedMeeting={selectedMeeting}
   selectedDate={selectedDate}
+  isSummarizing={isSummarizing}
   setSelectedMeeting={(meeting) => {
     setSelectedMeeting(meeting);
 
@@ -771,6 +798,9 @@ createMeeting={() => {
   renameMeeting={renameMeeting}
   deleteMeeting={deleteMeeting}
   generateSummary={generateSummary}
+
+  isSummarizing={isSummarizing}
+
   uploadAudio={uploadAudio}
   updateTranscript={updateTranscript}
   onRecorded={async (file) => {
@@ -781,11 +811,10 @@ createMeeting={() => {
     updateTranscript(text);
   }}
   meetingStatus={meetingStatus}
-
   selectedCategories={selectedCategories}
   setSelectedCategories={setSelectedCategories}
   updateCategories={updateCategories}
-updateMeetingInfo={updateMeetingInfo}
+  updateMeetingInfo={updateMeetingInfo}
 />
 
     </div>

@@ -5,6 +5,37 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import "@/lib/fonts/NanumGothic-normal";
 
+const getBase64Image = (
+  url: string
+): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+
+    img.onload = () => {
+      const canvas =
+        document.createElement("canvas");
+
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      const ctx =
+        canvas.getContext("2d");
+
+      ctx?.drawImage(
+        img,
+        0,
+        0
+      );
+
+      resolve(
+        canvas.toDataURL("image/png")
+      );
+    };
+
+    img.src = url;
+  });
+};
+
 interface MeetingEditorProps {
   selectedMeeting: Meeting | null;
 
@@ -13,6 +44,9 @@ interface MeetingEditorProps {
 
   generateSummary: () => void;
 
+  isSummarizing: boolean;
+
+  
   uploadAudio: (
     e: React.ChangeEvent<HTMLInputElement>
   ) => void;
@@ -50,6 +84,7 @@ export default function MeetingEditor({
   renameMeeting,
   deleteMeeting,
   generateSummary,
+  isSummarizing,
   uploadAudio,
   updateTranscript,
   onRecorded,
@@ -107,52 +142,96 @@ const getCategoryStyle = (
   }
 };
 
-const downloadMeeting = () => {
+const downloadMeeting = async () => {
   if (!selectedMeeting) return;
 
   const doc = new jsPDF();
+
+  const logoBase64 =
+    await getBase64Image("/logo.png");
+
   doc.setFont(
-  "NanumGothic"
-);
+    "NanumGothic",
+    "normal"
+  );
 
   // 제목
-  doc.setFontSize(20);
-  doc.text("회의록", 105, 20, {
-    align: "center",
-  });
+  doc.setFontSize(24);
+
+  doc.text(
+    "회 의 록",
+    105,
+    20,
+    {
+      align: "center",
+    }
+  );
 
   // 기본정보 표
   autoTable(doc, {
     startY: 30,
     theme: "grid",
+
     styles: {
+      font: "NanumGothic",
+      fontStyle: "normal",
       fontSize: 10,
       cellPadding: 4,
+      textColor: [0, 0, 0],
+      lineColor: [0, 0, 0],
+      lineWidth: 0.2,
     },
+
+    bodyStyles: {
+      font: "NanumGothic",
+      fontStyle: "normal",
+    },
+
+    columnStyles: {
+      0: {
+        cellWidth: 25,
+      },
+
+      1: {
+        cellWidth: 65,
+      },
+
+      2: {
+        cellWidth: 25,
+      },
+
+      3: {
+        cellWidth: 65,
+      },
+    },
+
     body: [
       [
-        "과제명",
-        selectedMeeting.title || "",
         "작성자",
         selectedMeeting.writer || "",
-      ],
-      [
-        "회의안건",
-        selectedMeeting.meeting_subject || "",
-        "",
-        "",
-      ],
-      [
-        "일시",
-        selectedMeeting.meeting_time || "",
-        "장소",
-        selectedMeeting.meeting_location || "",
-      ],
-      [
+
         "참석자",
         selectedMeeting.participants || "",
-        "",
-        "",
+      ],
+
+      [
+        "일 시",
+        selectedMeeting.meeting_time || "",
+
+        "장 소",
+        selectedMeeting.meeting_location || "",
+      ],
+
+      [
+        {
+          content: "회의안건",
+        },
+
+        {
+          content:
+            selectedMeeting.meeting_subject || "",
+          colSpan: 3,
+        },
       ],
     ],
   });
@@ -161,57 +240,120 @@ const downloadMeeting = () => {
     (doc as any).lastAutoTable.finalY + 15;
 
   // 회의내용 제목
-  doc.setFontSize(14);
-  doc.text("회의 내용", 14, finalY);
-
-  // 회의내용 박스
-  doc.rect(14, finalY + 3, 180, 80);
-
-  doc.setFontSize(10);
-
-  const transcript = doc.splitTextToSize(
-    selectedMeeting.transcript || "",
-    170
+  doc.setFont(
+    "NanumGothic",
+    "normal"
   );
+
+  doc.setFontSize(14);
 
   doc.text(
-    transcript,
-    18,
-    finalY + 12
+    "회의 내용",
+    14,
+    finalY
   );
 
-  // 요약 영역
-  const summaryY = finalY + 95;
+  // AI 요약 내용
+  const meetingContent =
+    doc.splitTextToSize(
+      selectedMeeting.summary ||
+        "내용이 없습니다.",
+      165
+    );
 
-  doc.setFontSize(14);
-  doc.text("AI 요약", 14, summaryY);
+  const lineHeight = 6;
+
+  let y = finalY + 15;
+
+  let pageCount = 1;
+
+  meetingContent.forEach((line) => {
+    if (y > 260) {
+      doc.addPage();
+
+      pageCount++;
+
+      y = 20;
+
+      doc.setFont(
+        "NanumGothic",
+        "normal"
+      );
+    }
+
+    doc.text(
+      line,
+      18,
+      y
+    );
+
+    y += lineHeight;
+  });
+
+  // 회의내용 박스
+  const contentHeight =
+    Math.max(
+      meetingContent.length * lineHeight,
+      40
+    );
 
   doc.rect(
     14,
-    summaryY + 3,
+    finalY + 3,
     180,
-    60
+    contentHeight + 15
   );
 
-  const summary = doc.splitTextToSize(
-    selectedMeeting.summary || "",
-    170
-  );
+  // 로고 위치 계산
+  let logoY;
 
-  doc.setFontSize(10);
+  // 1페이지에서 끝난 경우
+  if (pageCount === 1) {
+    logoY = 250;
+  }
+  // 여러 페이지인 경우
+  else {
+    logoY = y + 15;
+  }
 
-  doc.text(
-    summary,
-    18,
-    summaryY + 12
+  doc.addImage(
+    logoBase64,
+    "PNG",
+    70,
+    logoY,
+    70,
+    20
   );
 
   doc.save(
     `${selectedMeeting.title}_회의록.pdf`
   );
 };
-  return (
+
+return (
+  <>
+    {isSummarizing && (
+      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+        <div className="bg-white rounded-2xl shadow-2xl p-8 text-center">
+
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4" />
+
+          <h2 className="text-lg font-bold">
+            AI 요약 생성 중
+          </h2>
+
+          <p className="text-slate-500 mt-2">
+            회의 내용을 분석하고 있습니다.
+          </p>
+
+        </div>
+
+      </div>
+    )}
+
     <main className="flex-1 bg-slate-50 p-8 overflow-y-auto">
+
 
       {/* 제목 */}
 <div className="flex items-center gap-3 mb-4">
@@ -354,7 +496,7 @@ const downloadMeeting = () => {
     {/* 시간 */}
     <div>
       <label className="block text-sm font-medium text-slate-600 mb-1">
-        시간
+        일시
       </label>
 
       <input
@@ -365,7 +507,7 @@ const downloadMeeting = () => {
             e.target.value
           )
         }
-        placeholder="14:00 ~ 15:00"
+        placeholder="2026-01-01, 14:00 ~ 15:00"
         className="w-full border rounded-md px-2 py-1 text-sm text-slate-800"
       />
     </div>
@@ -503,5 +645,6 @@ const downloadMeeting = () => {
         </div>
       )}
     </main>
+  </>
   );
 }
