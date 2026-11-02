@@ -1,6 +1,10 @@
 import { Meeting } from "@/types/meeting";
 import MeetingRecorder from "./MeetingRecorder";
 
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import "@/lib/fonts/NanumGothic-normal";
+
 interface MeetingEditorProps {
   selectedMeeting: Meeting | null;
 
@@ -35,6 +39,10 @@ setSelectedCategories: React.Dispatch<
 updateCategories: (
   updatedCategories: string[]
 ) => Promise<void>;
+updateMeetingInfo: (
+  field: string,
+  value: string
+) => Promise<void>;
 }
 
 export default function MeetingEditor({
@@ -51,6 +59,7 @@ export default function MeetingEditor({
   selectedCategories,
   setSelectedCategories,
   updateCategories,
+  updateMeetingInfo,
 }: MeetingEditorProps){
   if (!selectedMeeting) {
     return (
@@ -93,7 +102,113 @@ const getCategoryStyle = (
 
     default:
       return "bg-indigo-100 text-indigo-700 border-indigo-200";
+
+      
   }
+};
+
+const downloadMeeting = () => {
+  if (!selectedMeeting) return;
+
+  const doc = new jsPDF();
+  doc.setFont(
+  "NanumGothic"
+);
+
+  // 제목
+  doc.setFontSize(20);
+  doc.text("회의록", 105, 20, {
+    align: "center",
+  });
+
+  // 기본정보 표
+  autoTable(doc, {
+    startY: 30,
+    theme: "grid",
+    styles: {
+      fontSize: 10,
+      cellPadding: 4,
+    },
+    body: [
+      [
+        "과제명",
+        selectedMeeting.title || "",
+        "작성자",
+        selectedMeeting.writer || "",
+      ],
+      [
+        "회의안건",
+        selectedMeeting.meeting_subject || "",
+        "",
+        "",
+      ],
+      [
+        "일시",
+        selectedMeeting.meeting_time || "",
+        "장소",
+        selectedMeeting.meeting_location || "",
+      ],
+      [
+        "참석자",
+        selectedMeeting.participants || "",
+        "",
+        "",
+      ],
+    ],
+  });
+
+  const finalY =
+    (doc as any).lastAutoTable.finalY + 15;
+
+  // 회의내용 제목
+  doc.setFontSize(14);
+  doc.text("회의 내용", 14, finalY);
+
+  // 회의내용 박스
+  doc.rect(14, finalY + 3, 180, 80);
+
+  doc.setFontSize(10);
+
+  const transcript = doc.splitTextToSize(
+    selectedMeeting.transcript || "",
+    170
+  );
+
+  doc.text(
+    transcript,
+    18,
+    finalY + 12
+  );
+
+  // 요약 영역
+  const summaryY = finalY + 95;
+
+  doc.setFontSize(14);
+  doc.text("AI 요약", 14, summaryY);
+
+  doc.rect(
+    14,
+    summaryY + 3,
+    180,
+    60
+  );
+
+  const summary = doc.splitTextToSize(
+    selectedMeeting.summary || "",
+    170
+  );
+
+  doc.setFontSize(10);
+
+  doc.text(
+    summary,
+    18,
+    summaryY + 12
+  );
+
+  doc.save(
+    `${selectedMeeting.title}_회의록.pdf`
+  );
 };
   return (
     <main className="flex-1 bg-slate-50 p-8 overflow-y-auto">
@@ -169,52 +284,63 @@ const getCategoryStyle = (
 </div>
 
       {/* 액션 버튼 */}
-      <div className="flex gap-2 mb-4 flex-wrap">
+<div className="flex justify-between items-center mb-4">
 
-        <button
-          onClick={renameMeeting}
-          className="bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2 rounded-lg transition"
-        >
-          제목 변경
-        </button>
+  {/* 왼쪽 버튼 그룹 */}
+  <div className="flex gap-2 flex-wrap">
 
-        <button
-          onClick={deleteMeeting}
-          className="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-lg transition"
-        >
-          회의 삭제
-        </button>
+    <button
+      onClick={renameMeeting}
+      className="bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2 rounded-lg transition"
+    >
+      제목 변경
+    </button>
 
-        <button
-          onClick={generateSummary}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition"
-        >
-          ✨ AI 요약
-        </button>
+    <button
+      onClick={deleteMeeting}
+      className="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-lg transition"
+    >
+      회의 삭제
+    </button>
 
-        <label className="bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-lg cursor-pointer transition">
-          🎵 음성 업로드
+    <button
+      onClick={generateSummary}
+      className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition"
+    >
+      ✨ AI 요약
+    </button>
 
-          <input
-            type="file"
-            accept=".mp3,.wav,.m4a"
-            onChange={uploadAudio}
-            className="hidden"
-          />
-        </label>
+    <label className="bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-lg cursor-pointer transition">
+      🎵 음성 업로드
 
-        <MeetingRecorder
-          onTranscript={onSpeechTranscript}
-          onRecorded={onRecorded}
-          onMeetingStarted={() => {}}
-          onMeetingEnded={(duration) => {
-            console.log(
-              "회의 길이:",
-              duration
-            );
-          }}
-        />
-      </div>
+      <input
+        type="file"
+        accept=".mp3,.wav,.m4a"
+        onChange={uploadAudio}
+        className="hidden"
+      />
+    </label>
+
+    <MeetingRecorder
+      onTranscript={onSpeechTranscript}
+      onRecorded={onRecorded}
+      onMeetingStarted={() => {}}
+      onMeetingEnded={(duration) => {
+        console.log("회의 길이:", duration);
+      }}
+    />
+
+  </div>
+
+  {/* 오른쪽 버튼 */}
+  <button
+    onClick={downloadMeeting}
+    className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg transition"
+  >
+    📄 회의록 다운로드
+  </button>
+
+</div>
 
       {/* 회의 기본 정보 */}
 <div className="mb-4 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
@@ -225,58 +351,81 @@ const getCategoryStyle = (
 
   <div className="grid grid-cols-4 gap-3">
 
+    {/* 시간 */}
     <div>
       <label className="block text-sm font-medium text-slate-600 mb-1">
         시간
       </label>
 
       <input
-        value={selectedMeeting.meeting_date ?? ""}
+        value={selectedMeeting.meeting_time ?? ""}
+        onChange={(e) =>
+          updateMeetingInfo(
+            "meeting_time",
+            e.target.value
+          )
+        }
         placeholder="14:00 ~ 15:00"
         className="w-full border rounded-md px-2 py-1 text-sm text-slate-800"
       />
     </div>
 
+    {/* 장소 */}
     <div>
       <label className="block text-sm font-medium text-slate-600 mb-1">
         장소
       </label>
 
       <input
-        value={selectedMeeting.meeting_time ?? ""}
+        value={selectedMeeting.meeting_location ?? ""}
+        onChange={(e) =>
+          updateMeetingInfo(
+            "meeting_location",
+            e.target.value
+          )
+        }
         placeholder="회의실A"
         className="w-full border rounded-md px-2 py-1 text-sm text-slate-800"
       />
     </div>
 
+    {/* 작성자 */}
     <div>
       <label className="block text-sm font-medium text-slate-600 mb-1">
         작성자
       </label>
 
       <input
-        value={selectedMeeting.meeting_location ?? ""}
+        value={selectedMeeting.writer ?? ""}
+        onChange={(e) =>
+          updateMeetingInfo(
+            "writer",
+            e.target.value
+          )
+        }
         placeholder="AIAX산업팀 홍길동"
         className="w-full border rounded-md px-2 py-1 text-sm text-slate-800"
-
       />
     </div>
 
+    {/* 참석자 */}
     <div>
       <label className="block text-sm font-medium text-slate-600 mb-1">
         참석자
       </label>
 
       <input
-        value={selectedMeeting.writer ?? ""}
+        value={selectedMeeting.participants ?? ""}
+        onChange={(e) =>
+          updateMeetingInfo(
+            "participants",
+            e.target.value
+          )
+        }
         placeholder="A기업 대표 김철수"
         className="w-full border rounded-md px-2 py-1 text-sm text-slate-800"
       />
     </div>
-
-  </div>
-
-  <div className="mt-4">
 
   </div>
 
@@ -288,9 +437,14 @@ const getCategoryStyle = (
 
     <input
       value={selectedMeeting.meeting_subject ?? ""}
+      onChange={(e) =>
+        updateMeetingInfo(
+          "meeting_subject",
+          e.target.value
+        )
+      }
       placeholder="제조업 AI융합 기반 조성 사업 성과홍보회 개최 논의"
       className="w-full border rounded-md px-2 py-1 text-sm text-slate-800"
-
     />
 
   </div>

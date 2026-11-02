@@ -9,23 +9,30 @@ import MeetingEditor from "@/components/MeetingEditor";
 import DashboardHeader from "@/components/DashboardHeader";
 
 type Meeting = {
-meeting_date?: string | null;
-meeting_time?: string | null;
+  id: string;
+  title: string;
+  transcript: string;
 
-meeting_location?: string | null;
+  summary?: string | null;
+  audio_url?: string | null;
 
-participants?: string | null;
+  meeting_started_at?: string | null;
+  meeting_ended_at?: string | null;
 
-writer?: string | null;
+  meeting_date?: string | null;
+  meeting_time?: string | null;
 
-meeting_subject?: string | null;
+  meeting_location?: string | null;
 
-discussion_points?: string | null;
+  participants?: string | null;
 
-decisions?: string | null;
+  writer?: string | null;
 
-action_items?: string | null;
+  meeting_subject?: string | null;
+
+  created_at: string;
 };
+
 
 export default function Home() {
   const [userId, setUserId] = useState("");
@@ -253,7 +260,39 @@ const updateCategories = async (
       console.error(error);
     }
   };
+const updateMeetingInfo = async (
+  field: string,
+  value: string
+) => {
+  if (!selectedMeeting) return;
 
+  const updatedMeeting = {
+    ...selectedMeeting,
+    [field]: value,
+  };
+
+  setSelectedMeeting(updatedMeeting);
+
+  setMeetings((prev) =>
+    prev.map((meeting) =>
+      meeting.id === selectedMeeting.id
+        ? updatedMeeting
+        : meeting
+    )
+  );
+
+  const { error } = await supabase
+    .from("meetings")
+    .update({
+      [field]: value,
+    })
+    .eq("id", selectedMeeting.id);
+
+  if (error) {
+    console.error(error);
+  }
+};
+  
 const generateSummary = async () => {
   if (!selectedMeeting) {
     alert("회의를 선택하세요.");
@@ -740,6 +779,7 @@ createMeeting={() => {
   selectedCategories={selectedCategories}
   setSelectedCategories={setSelectedCategories}
   updateCategories={updateCategories}
+updateMeetingInfo={updateMeetingInfo}
 />
 
     </div>
