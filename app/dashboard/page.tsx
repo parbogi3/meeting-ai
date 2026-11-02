@@ -234,10 +234,14 @@ const updateCategories = async (
   );
 
 if (selectedMeeting) {
-  setSelectedMeeting({
-    ...selectedMeeting,
-    categories: updatedCategories,
-  });
+setSelectedMeeting((prev) =>
+  prev
+    ? {
+        ...prev,
+        categories: updatedCategories,
+      }
+    : null
+);
 }
 };
 
