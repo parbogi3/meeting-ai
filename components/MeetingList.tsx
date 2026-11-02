@@ -2,6 +2,7 @@ import { Meeting } from "@/types/meeting";
 
 interface MeetingListProps {
   meetings: Meeting[];
+  isSummarizing: boolean;
   selectedMeeting: Meeting | null;
   selectedDate: string;
   setSelectedMeeting: (

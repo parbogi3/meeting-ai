@@ -267,7 +267,7 @@ const downloadMeeting = async () => {
 
   let pageCount = 1;
 
-  meetingContent.forEach((line) => {
+ meetingContent.forEach((line: string) => {
     if (y > 260) {
       doc.addPage();
 
