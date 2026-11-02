@@ -233,10 +233,12 @@ const updateCategories = async (
     )
   );
 
+if (selectedMeeting) {
   setSelectedMeeting({
     ...selectedMeeting,
     categories: updatedCategories,
   });
+}
 };
 
   const updateTranscript = async (
