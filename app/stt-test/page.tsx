@@ -13,6 +13,7 @@ import { transcribe }
 import {
   getModel,
 } from "@/lib/whisper/cache";
+import { clearModel } from "@/lib/whisper/cache";
 
 
 export default function STTTest() {
@@ -173,6 +174,16 @@ setPcmInfo(
 </div>
 <div className="mt-6">
   <h2 className="font-bold">
+    
+<button
+  onClick={async () => {
+    await clearModel();
+    alert("모델 삭제 완료");
+  }}
+>
+  모델 삭제
+</button>
+
     전사 결과
   </h2>
 

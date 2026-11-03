@@ -113,5 +113,22 @@ export async function getModel() {
     req.onerror = () => {
       resolve(null);
     };
-  });
+  }); 
 }  
+export async function clearModel() {
+  const db = await openDB();
+
+  return new Promise<void>((resolve) => {
+    const tx = db.transaction(
+      STORE_NAME,
+      "readwrite"
+    );
+
+    tx.objectStore(STORE_NAME)
+      .delete("whisper-model");
+
+    tx.oncomplete = () => {
+      resolve();
+    };
+  });
+}
