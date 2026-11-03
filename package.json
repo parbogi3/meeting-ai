@@ -12,6 +12,7 @@
     "@google/generative-ai": "^0.24.1",
     "@huggingface/transformers": "^4.3.2",
     "@supabase/supabase-js": "^2.118.0",
+    "@timur00kh/whisper.wasm": "^0.1.1",
     "docx": "^9.15.0",
     "file-saver": "^2.0.5",
     "html2canvas": "^1.4.1",
