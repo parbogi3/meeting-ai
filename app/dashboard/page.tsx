@@ -484,22 +484,30 @@ formData.append(
   audioBlob,
   file.name
 );
-
+console.log("Whisper 호출 시작");
 const transcribeResponse =
   await fetch(
-    "http://218.39.228.166:9000/transcribe",
+    "http://localhost:9000/transcribe",
     {
       method: "POST",
       body: formData,
     }
   );
 
+  console.log("Whisper 응답 받음");
+console.log(transcribeResponse.status);
+
   const transcribeData =
   await transcribeResponse.json();
+
+  console.log("전사 응답");
+console.log(transcribeData);
 
 const transcript =
   transcribeData.text ?? "";
 
+console.log("전사 텍스트");
+console.log(transcript);
 
     await supabase
       .from("meetings")
