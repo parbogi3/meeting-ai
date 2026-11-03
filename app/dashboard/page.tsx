@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
+
 import CalendarPanel from "@/components/CalendarPanel";
 import MeetingList from "@/components/MeetingList";
 import MeetingEditor from "@/components/MeetingEditor";
@@ -37,6 +38,7 @@ type Meeting = {
 export default function Home() {
   const [userId, setUserId] = useState("");
   const [userEmail, setUserEmail] = useState("");
+  
 
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [selectedMeeting, setSelectedMeeting] =
@@ -485,6 +487,7 @@ formData.append(
   file.name
 );
 console.log("Whisper 호출 시작");
+// V1 Faster-Whisper Server
 const transcribeResponse =
   await fetch(
     "http://localhost:9000/transcribe",
@@ -673,6 +676,7 @@ const currentMonth =
       <div className="h-screen flex flex-col">
 
     <DashboardHeader />
+
     {showCreateModal && (
   <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
