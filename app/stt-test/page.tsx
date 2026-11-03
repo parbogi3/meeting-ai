@@ -10,6 +10,10 @@ import {
 } from "@/lib/whisper/cache";
 import { transcribe }
   from "@/lib/whisper/transcriber";
+import {
+  getModel,
+} from "@/lib/whisper/cache";
+
 
 export default function STTTest() {
   const [file, setFile] = useState<File | null>(
@@ -176,7 +180,31 @@ setPcmInfo(
     {transcript}
   </pre>
 </div>
+<button
+  onClick={async () => {
+    const model =
+      await getModel();
 
+    if (!model) {
+      alert("모델 없음");
+      return;
+    }
+
+    alert(
+      `모델 로드 성공\n${model.size} bytes`
+    );
+  }}
+  className="
+    bg-purple-600
+    text-white
+    px-4
+    py-2
+    rounded
+    ml-2
+  "
+>
+  모델 로드 테스트
+</button>
   모델 상태: {modelStatus}
 </div>
     </div>

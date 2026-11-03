@@ -15,7 +15,7 @@ export async function loadModel() {
 
   const response =
   await fetch("/models/ggml-tiny.bin");
-
+  
 const blob =
   await response.blob();
 

@@ -91,3 +91,27 @@ export async function getModelSize() {
     };
   });
 }
+export async function getModel() {
+  const db = await openDB();
+
+  return new Promise<Blob | null>((resolve) => {
+    const tx = db.transaction(
+      STORE_NAME,
+      "readonly"
+    );
+
+    const store =
+      tx.objectStore(STORE_NAME);
+
+    const req =
+      store.get("whisper-model");
+
+    req.onsuccess = () => {
+      resolve(req.result ?? null);
+    };
+
+    req.onerror = () => {
+      resolve(null);
+    };
+  });
+}  
