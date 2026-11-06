@@ -98,7 +98,7 @@ export default function MeetingEditor({
 }: MeetingEditorProps){
   if (!selectedMeeting) {
     return (
-      <main className="flex-1 bg-slate-50 p-8 h-screen overflow-y-auto">
+      <main className="flex-1 min-w-0 bg-slate-50 p-8 overflow-y-auto">
         <div className="bg-white border rounded-2xl p-10 text-slate-500 shadow-sm">
           회의를 선택하세요.
         </div>
@@ -473,7 +473,11 @@ return (
     />
 
   </div>
+<p className="mt-2 text-xs text-slate-500">
+  ※ 음성 업로드는 500MB 이하 파일만 지원합니다
+  </p>
 
+  
   {/* 오른쪽 버튼 */}
   <button
     onClick={downloadMeeting}
@@ -491,7 +495,7 @@ return (
     회의 기본 정보
   </h2>
 
-  <div className="grid grid-cols-4 gap-3">
+  <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
 
     {/* 시간 */}
     <div>

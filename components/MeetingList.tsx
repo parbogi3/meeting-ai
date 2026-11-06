@@ -5,9 +5,12 @@ interface MeetingListProps {
   isSummarizing: boolean;
   selectedMeeting: Meeting | null;
   selectedDate: string;
+
   setSelectedMeeting: (
     meeting: Meeting
   ) => void;
+
+  onClose: () => void;
 }
 
 export default function MeetingList({
@@ -15,6 +18,7 @@ export default function MeetingList({
   selectedMeeting,
   selectedDate,
   setSelectedMeeting,
+  onClose,
 }: MeetingListProps) {
   const meetingsByDate = meetings.filter(
     (meeting) =>
@@ -51,15 +55,26 @@ export default function MeetingList({
 
   return (
     <aside className="w-80 bg-white border-r p-4 overflow-y-auto">
-      <h2 className="font-bold text-lg mb-2 text-slate-900">
-        선택 날짜 회의
-      </h2>
+
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="font-bold text-lg text-slate-900">
+          선택 날짜 회의
+        </h2>
+
+        <button
+          onClick={onClose}
+          className="text-sm text-slate-400 hover:text-slate-700"
+        >
+          ✕
+        </button>
+      </div>
 
       <p className="text-sm text-slate-500 mb-4">
         {selectedDate}
       </p>
 
       <div className="space-y-3">
+
         {meetingsByDate.length === 0 && (
           <div className="text-sm text-slate-400">
             회의가 없습니다.
@@ -73,8 +88,7 @@ export default function MeetingList({
               setSelectedMeeting(meeting)
             }
             className={`w-full text-left p-4 rounded-xl border transition ${
-              selectedMeeting?.id ===
-              meeting.id
+              selectedMeeting?.id === meeting.id
                 ? "bg-indigo-50 border-indigo-300"
                 : "bg-white border-slate-200 hover:bg-slate-50"
             }`}
@@ -118,6 +132,7 @@ export default function MeetingList({
           </button>
         ))}
       </div>
+
     </aside>
   );
 }

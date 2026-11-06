@@ -2,12 +2,13 @@
 
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
 
 export default function DashboardHeader() {
   const logout = async () => {
     await supabase.auth.signOut();
 
-    window.location.href = "/login";
+    window.location.href = "/";
   };
 
   return (

@@ -19,7 +19,6 @@ interface MeetingRecorderProps {
 }
 
 export default function MeetingRecorder({
-  onTranscript,
   onRecorded,
   onMeetingStarted,
   onMeetingEnded,
@@ -27,87 +26,25 @@ export default function MeetingRecorder({
   const [recording, setRecording] =
     useState(false);
 
-  const recognitionRef =
-    useRef<any>(null);
-
   const mediaRecorderRef =
     useRef<MediaRecorder | null>(null);
 
   const chunksRef = useRef<Blob[]>([]);
-
-  const transcriptRef =
-    useRef("");
 
   const meetingStartRef =
     useRef<number | null>(null);
 
   const startMeeting = async () => {
     try {
-      const SpeechRecognition =
-        (window as any)
-          .SpeechRecognition ||
-        (window as any)
-          .webkitSpeechRecognition;
-
-      if (!SpeechRecognition) {
-        alert(
-          "이 브라우저는 음성 인식을 지원하지 않습니다."
-        );
-        return;
-      }
-
       meetingStartRef.current =
         Date.now();
 
       onMeetingStarted();
 
-      transcriptRef.current = "";
-
-      const recognition =
-        new SpeechRecognition();
-
-      recognition.lang = "ko-KR";
-
-      recognition.continuous = true;
-
-      recognition.interimResults = false;
-
-      recognition.onresult = (
-        event: any
-      ) => {
-        const latestText =
-          event.results[
-            event.results.length - 1
-          ][0].transcript;
-
-        transcriptRef.current +=
-          latestText + "\n";
-
-        onTranscript(
-          transcriptRef.current
-        );
-      };
-
-      recognition.onerror = (
-        error: any
-      ) => {
-        console.error(
-          "SpeechRecognition Error",
-          error
-        );
-      };
-
-      recognition.start();
-
-      recognitionRef.current =
-        recognition;
-
       const stream =
-        await navigator.mediaDevices.getUserMedia(
-          {
-            audio: true,
-          }
-        );
+        await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
 
       const recorder =
         new MediaRecorder(stream);
@@ -138,8 +75,6 @@ export default function MeetingRecorder({
   };
 
   const stopMeeting = () => {
-    recognitionRef.current?.stop();
-
     const meetingEnd =
       Date.now();
 

@@ -40,6 +40,9 @@ export default function Home() {
   const [userId, setUserId] = useState("");
   const [userEmail, setUserEmail] = useState("");
 
+  const [showMeetingList, setShowMeetingList] =
+  useState(false);
+
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [selectedMeeting, setSelectedMeeting] =
     useState<Meeting | null>(null);
@@ -94,7 +97,9 @@ useEffect(() => {
     ).padStart(2, "0")}-${String(
       today.getDate()
     ).padStart(2, "0")}`
-  );
+  )
+  setShowMeetingList(false);
+  ;
 }, []);
   const loadUserAndMeetings = async () => {
     const {
@@ -121,12 +126,25 @@ useEffect(() => {
 
     setMeetings(data || []);
 
-    if (data && data.length > 0) {
-  setSelectedMeeting(data[0]);
+    const today =
+  new Date().toISOString().slice(0, 10);
+
+const todayMeeting =
+  data?.find(
+    (meeting) =>
+      meeting.created_at?.slice(0, 10) ===
+      today
+  );
+
+if (todayMeeting) {
+  setSelectedMeeting(todayMeeting);
 
   setSelectedCategories(
-    data[0].categories ?? []
+    todayMeeting.categories ?? []
   );
+} else {
+  setSelectedMeeting(null);
+  setSelectedCategories([]);
 }
   };
 
@@ -845,7 +863,7 @@ setCreateCategories(
 
   </div>
 )}
-  <div className="flex flex-1 overflow-hidden">
+<div className="flex flex-1 overflow-hidden">
 <CalendarPanel
   currentYear={currentYear}
   currentMonth={currentMonth}
@@ -854,7 +872,10 @@ setCreateCategories(
   meetings={meetings}
   prevMonth={prevMonth}
   nextMonth={nextMonth}
-  setSelectedDate={setSelectedDate}
+  setSelectedDate={(date) => {
+  setSelectedDate(date);
+  setShowMeetingList(true);
+}}
 createMeeting={() => {
   setNewMeetingTitle("");
   setCreateCategories([]);
@@ -862,19 +883,24 @@ createMeeting={() => {
 }}
 />
 
-      <MeetingList
-  meetings={meetings}
-  selectedMeeting={selectedMeeting}
-  selectedDate={selectedDate}
-  isSummarizing={isSummarizing}
-  setSelectedMeeting={(meeting) => {
-    setSelectedMeeting(meeting);
+      {showMeetingList && (
+  <MeetingList
+    meetings={meetings}
+    selectedMeeting={selectedMeeting}
+    selectedDate={selectedDate}
+    isSummarizing={isSummarizing}
+    setSelectedMeeting={(meeting) => {
+      setSelectedMeeting(meeting);
 
-    setSelectedCategories(
-      meeting.categories ?? []
-    );
-  }}
-/>
+      setSelectedCategories(
+        meeting.categories ?? []
+      );
+    }}
+    onClose={() =>
+      setShowMeetingList(false)
+    }
+  />
+)}
 
 <MeetingEditor
   selectedMeeting={selectedMeeting}

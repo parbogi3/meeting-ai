@@ -23,6 +23,7 @@ export default function CalendarPanel({
 }: CalendarPanelProps) {
   return (
     <aside className="w-72 bg-slate-100 border-r p-4 overflow-y-auto">
+
       <h1 className="text-2xl font-bold text-slate-900 mb-4">
         Calendar
       </h1>
