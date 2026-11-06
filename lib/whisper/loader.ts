@@ -14,7 +14,7 @@ export async function loadModel() {
   console.log("모델 다운로드 시작");
 
   const response =
-  await fetch("/models/ggml-base.bin");
+  await fetch("https://huggingface.co/parbogi3/meeting-ai-model/resolve/main/ggml-small.bin");
 
   if (!response.ok) {
   throw new Error(
