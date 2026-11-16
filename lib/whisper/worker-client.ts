@@ -2,15 +2,12 @@ let worker: Worker | null = null;
 
 export function getWorker() {
   if (worker) {
-
     return worker;
   }
-
 
   worker = new Worker(
     "/workers/whisper-worker.js"
   );
-
 
   worker.onerror = (
     error

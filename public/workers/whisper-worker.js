@@ -90,14 +90,23 @@ self.onmessage = async (event) => {
         "[Worker] Transcribe Start"
       );
 
-      const rc =
-        Module.full_default(
-          runtime,
-          pcm,
-          "ko",
-          1,
-          false
-        );
+   const THREADS = 4;
+
+console.time(
+  "[WHISPER]"
+);
+
+const rc =
+  Module.full_default(
+  runtime,
+  pcm,
+  "ko",
+  1,
+  false
+);
+console.timeEnd(
+  "[WHISPER]"
+);
 
       console.log(
         "[Worker] Return Code:",

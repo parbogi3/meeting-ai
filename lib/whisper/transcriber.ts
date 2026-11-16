@@ -11,6 +11,10 @@ import {
   transcribeWithWorker,
 } from "./worker-client";
 
+import {
+  splitAudioIntoChunks,
+} from "./chunk";
+
 let initialized = false;
 
 export async function transcribe(
@@ -58,14 +62,35 @@ export async function transcribe(
     "[TRANSCRIBER] 전사 시작"
   );
 
-  const transcript =
-    await transcribeWithWorker(
-      pcm16k
-    );
-
-  console.log(
-    "[TRANSCRIBER] 전사 완료"
+  const chunks =
+  splitAudioIntoChunks(
+    pcm16k,
+    16000,
+    30
   );
 
-  return transcript;
+
+const results: string[] = [];
+
+for (
+  let i = 0;
+  i < chunks.length;
+  i++
+) {
+  const text =
+    await transcribeWithWorker(
+      chunks[i]
+    );
+
+  results.push(text);
+}
+
+const transcript =
+  results.join("\n");
+
+console.log(
+  "[TRANSCRIBER] 전사 완료"
+);
+
+return transcript;
 }
